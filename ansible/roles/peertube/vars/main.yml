@@ -1,0 +1,14 @@
+---
+peertube_version: 3.0.0
+peertube_url: "https://github.com/Chocobozzz/PeerTube/releases/download/v{{ peertube_version }}/peertube-v{{ peertube_version }}.zip"
+
+peertube_global_packages:
+  - name: node-gyp
+  - name: node-gyp-build
+peertube_packages:
+  - name: ffmpeg
+  - name: gmake
+  - name: node12
+  - name: postgresql13-client
+  - name: unzip
+  - name: yarn-node12

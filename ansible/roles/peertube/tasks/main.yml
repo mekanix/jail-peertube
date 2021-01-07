@@ -1,0 +1,88 @@
+---
+- name: install peertube packages
+  with_items: "{{ peertube_packages }}"
+  package:
+    name: "{{ item.name }}"
+
+- name: create www directory
+  file:
+    path: /usr/local/www
+    owner: www
+    group: www
+    mode: 0755
+    state: directory
+
+- name: download and extract peertube tarball
+  unarchive:
+    src: "{{ peertube_url }}"
+    dest: /usr/local/www
+    remote_src: yes
+    owner: www
+    group: www
+    mode: 0644
+    creates: "/usr/local/www/peertube-v{{ peertube_version }}"
+
+- name: symlink proper directory
+  file:
+    src: peertube-v{{ peertube_version }}
+    dest: /usr/local/www/peertube
+    owner: www
+    group: www
+    state: link
+  notify:
+    - restart peertube
+
+- name: fix client directory ownership
+  file:
+    path: /usr/local/www/peertube/client
+    owner: www
+    group: www
+    mode: 0755
+    state: directory
+
+- name: fix directory permissions
+  command: find . -type d -exec chmod 755 {} ;
+  args:
+    chdir: /usr/local/www/peertube
+    creates: node_modules
+  notify:
+    - restart peertube
+
+- name: install javascript build dependencies
+  become: yes
+  become_user: www
+  with_items: "{{ peertube_global_packages }}"
+  shell: env HOME=/usr/local/www yarn global add "{{ item.name }}"
+  args:
+    chdir: /usr/local/www
+    creates: node_modules
+
+- name: install javascript dependencies
+  shell: env HOME=/usr/local/www yarn install --production --pure-lockfile
+  become: yes
+  become_user: www
+  args:
+    chdir: /usr/local/www/peertube
+    creates: node_modules
+
+- name: create production config
+  template:
+    src: production.yaml.j2
+    dest: /usr/local/www/peertube/config/production.yaml
+  notify:
+    - restart peertube
+
+- name: create service file
+  template:
+    src: peertube.rc.j2
+    dest: /usr/local/etc/rc.d/peertube
+    mode: 0755
+  notify:
+    - restart peertube
+
+- name: enable peertube service
+  template:
+    src: peertube.j2
+    dest: /etc/rc.conf.d/peertube
+  notify:
+    - restart peertube

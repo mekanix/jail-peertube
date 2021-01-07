@@ -1,0 +1,5 @@
+---
+- name: restart peertube
+  service:
+    name: peertube
+    state: restarted

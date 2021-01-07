@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# PROVIDE: peertube
+# REQUIRE: LOGIN postgresql nginx redis
+# KEYWORD: shutdown
+
+PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
+
+. /etc/rc.subr
+
+desc="Peertube daemon"
+name=peertube
+rcvar=peertube_enable
+start_precmd="${name}_precmd"
+
+load_rc_config $name
+
+: ${peertube_enable:=NO}
+
+sig_stop=-KILL
+peertube_user=www
+peertube_chdir="/usr/local/www/peertube"
+peertube_env="HOME=/usr/local/www/peertube \
+NODE_ENV=production \
+NODE_CONFIG_DIR=/usr/local/www/peertube/config \
+USER=www"
+
+command="/usr/local/bin/node"
+command_args="dist/server >> /var/log/peertube/${name}.log 2>&1 &"
+
+peertube_precmd()
+{
+  /usr/bin/install -d -m 0755 -o www -g www /var/log/peertube
+}
+
+run_rc_command "$1"
