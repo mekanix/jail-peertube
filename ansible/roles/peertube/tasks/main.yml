@@ -52,18 +52,16 @@
   become: yes
   become_user: www
   with_items: "{{ peertube_global_packages }}"
-  shell: env HOME=/usr/local/www yarn global add "{{ item.name }}"
+  shell: env HOME=/usr/local/www npm install "{{ item.name }}"
   args:
-    chdir: /usr/local/www
-    creates: node_modules
+    chdir: /usr/local/www/peertube
 
 - name: install javascript dependencies
-  shell: env HOME=/usr/local/www yarn install --production --pure-lockfile
+  shell: env HOME=/usr/local/www npm install || true
   become: yes
   become_user: www
   args:
     chdir: /usr/local/www/peertube
-    creates: node_modules
 
 - name: create production config
   template:

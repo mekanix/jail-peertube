@@ -26,6 +26,17 @@ redis:
   auth: null
   db: 0
 
+smtp:
+  # smtp or sendmail
+  transport: smtp
+  hostname: mail.{{ peertube_domain }}
+  port: 587 # If you use StartTLS: 587
+  username: peertube@{{ peertube_domain }}
+  password: Sekrit
+  tls: false # If you use StartTLS: false
+  disable_starttls: false
+  from_address: 'peertube@{{ peertube_domain }}'
+
 live:
   enabled: true
   max_duration: -1
@@ -44,6 +55,6 @@ live:
       240p: false
       360p: false
       480p: false
-      720p: false
+      720p: true
       1080p: false
       2160p: false
